@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 
 import { AuthComponent } from './auth/auth.component';
+import { OAuth2CallbackComponent } from './auth/oauth2-callback.component';
 import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { LessonPlayerComponent } from './course/lesson-player.component';
 import { DashboardShellComponent } from './shared/dashboard-shell.component';
@@ -16,6 +17,7 @@ import { StudentExploreComponent } from './student/explore.component';
 import { StudentMyCoursesComponent } from './student/my-courses.component';
 import { StudentProfileComponent } from './student/profile.component';
 import { StudentProgressComponent } from './student/progress.component';
+import { StudentWishlistComponent } from './student/wishlist.component';
 
 // Instructor
 import { InstructorCreateCourseComponent } from './instructor/create-course.component';
@@ -30,6 +32,7 @@ import { AdminCoursesComponent } from './admin/courses.component';
 import { AdminUsersComponent } from './admin/users.component';
 import { AdminApproveCoursesComponent } from './admin/approve-courses.component';
 import { AdminAnalyticsComponent } from './admin/analytics.component';
+import { AdminProfileComponent } from './admin/profile.component';
 
 // Shared
 import { DiscussionComponent } from './shared/discussion.component';
@@ -37,6 +40,7 @@ import { DiscussionComponent } from './shared/discussion.component';
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'auth', component: AuthComponent },
+  { path: 'oauth2/callback', component: OAuth2CallbackComponent },
   { path: 'explore', component: ExploreComponent },
   { path: 'course/:courseId', component: CourseDetailComponent },
   {
@@ -54,6 +58,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: StudentDashboardComponent },
       { path: 'my-courses', component: StudentMyCoursesComponent },
+      { path: 'wishlist', component: StudentWishlistComponent },
       { path: 'explore', component: StudentExploreComponent },
       { path: 'certificates', component: StudentCertificatesComponent },
       { path: 'profile', component: StudentProfileComponent },
@@ -90,6 +95,7 @@ export const routes: Routes = [
       { path: 'users', component: AdminUsersComponent },
       { path: 'approve-courses', component: AdminApproveCoursesComponent },
       { path: 'analytics', component: AdminAnalyticsComponent },
+      { path: 'profile', component: AdminProfileComponent },
     ],
   },
 

@@ -9,6 +9,10 @@ export interface AuthUser {
   fullName: string;
   role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
   token: string;
+  bio?: string;
+  mobile?: string;
+  headline?: string;
+  expertise?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,6 +47,10 @@ export class AuthService {
             fullName: res.fullName,
             role: res.role as AuthUser['role'],
             token: res.token,
+            bio: res.bio,
+            mobile: res.mobile,
+            headline: res.headline,
+            expertise: res.expertise,
           };
           this._user.set(user);
           localStorage.setItem('auth_user', JSON.stringify(user));
@@ -53,8 +61,12 @@ export class AuthService {
     );
   }
 
-  register(email: string, fullName: string, password: string, role: string) {
-    return this.api.register(email, fullName, password, role);
+  sendOtp(email: string) {
+    return this.api.sendOtp(email);
+  }
+
+  register(email: string, fullName: string, password: string, role: string, otp: string) {
+    return this.api.register(email, fullName, password, role, otp);
   }
 
   logout() {
@@ -63,6 +75,20 @@ export class AuthService {
     localStorage.removeItem('token');
     this.router.navigate(['/']);
   }
+
+  /** Called by OAuth2CallbackComponent after Google redirect */
+  loginWithOAuth2(token: string, role: AuthUser['role'], userId: number) {
+    // We don't have fullName/email from the token in the browser directly,
+    // so build a minimal user and then refresh from server.
+    const user: AuthUser = { userId, email: '', fullName: '', role, token };
+    this._user.set(user);
+    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem('token', token);
+    // Fetch full profile to populate email/fullName
+    this.refreshCurrentUser();
+    this.redirectAfterLogin(role);
+  }
+
 
   /** Update the user signal & localStorage with partial user data */
   updateUser(partial: Partial<AuthUser>) {
@@ -88,6 +114,10 @@ export class AuthService {
             userId: res.userId, // KEY FIX: Sync the ID too!
             fullName: res.fullName,
             email: res.email,
+            bio: res.bio,
+            mobile: res.mobile,
+            headline: res.headline,
+            expertise: res.expertise,
           });
         }
       },

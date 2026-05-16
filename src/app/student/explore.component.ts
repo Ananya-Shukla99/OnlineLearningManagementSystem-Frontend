@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-student-explore',
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   template: `
     <section>
       <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
@@ -59,7 +61,10 @@ import { ApiService } from '../services/api.service';
           } @else {
             <div class="explore-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); width: 100%;">
               @for (course of filteredCourses(); track course.courseId) {
-                <a [routerLink]="['/course', course.courseId]" class="el-card explore-card">
+                <a [routerLink]="['/course', course.courseId]" class="el-card explore-card" [class.wishlisted-card]="wishlist().has(course.courseId)">
+                  @if (wishlist().has(course.courseId)) {
+                    <div class="wishlist-badge">♥ Wishlisted</div>
+                  }
                   <div
                     class="course-visual"
                     [style.background-image]="course.thumbnailUrl ? 'url(' + course.thumbnailUrl + ')' : null"
@@ -69,8 +74,25 @@ import { ApiService } from '../services/api.service';
                       <span class="course-level">{{ course.level }}</span>
                       <span class="course-date">{{ course.category }}</span>
                     </div>
-                    <h3 class="course-title">{{ course.title }}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <h3 class="course-title" style="flex: 1; padding-right: 1rem;">{{ course.title }}</h3>
+                      <button type="button" class="wishlist-btn" 
+                              (click)="toggleWishlist($event, course)"
+                              [class.active]="wishlist().has(course.courseId)"
+                              [title]="wishlist().has(course.courseId) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" 
+                            [attr.fill]="wishlist().has(course.courseId) ? '#e05c5c' : 'none'" 
+                            [attr.stroke]="wishlist().has(course.courseId) ? '#e05c5c' : 'currentColor'"></path>
+                        </svg>
+                      </button>
+                    </div>
                     <p class="course-description">{{ course.description }}</p>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                      <span style="color: #ffc107;">★★★★★</span>
+                      <span style="font-weight: bold; font-size: 0.9rem;">{{ course.averageRating ? (course.averageRating | number:'1.1-1') : '0.0' }}</span>
+                      <span class="page-copy" style="font-size: 0.8rem;">({{ course.ratingCount || 0 }} reviews)</span>
+                    </div>
                     <div class="course-footer">
                       <div class="course-instructor">
                         <div class="instructor-name">{{ course.language || 'English' }}</div>
@@ -93,6 +115,49 @@ import { ApiService } from '../services/api.service';
       </div>
     </section>
   `,
+  styles: `
+    .wishlist-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--el-text-secondary);
+      transition: all 0.2s;
+      padding: 0.25rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .wishlist-btn:hover {
+      background: rgba(255,255,255,0.1);
+      transform: scale(1.15);
+    }
+    .wishlist-btn.active svg path {
+      animation: heartPop 0.3s ease;
+    }
+    @keyframes heartPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+    .wishlisted-card {
+      border: 2px solid rgba(224, 92, 92, 0.55) !important;
+      box-shadow: 0 0 18px rgba(224, 92, 92, 0.18);
+      position: relative;
+    }
+    .wishlist-badge {
+      position: absolute;
+      top: 0.55rem;
+      left: 0.55rem;
+      background: linear-gradient(135deg, #e05c5c, #c0392b);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      z-index: 10;
+      pointer-events: none;
+    }
+  `
 })
 export class StudentExploreComponent implements OnInit, OnDestroy {
   protected readonly categories = ['All', 'Design', 'Development', 'Business', 'Marketing', 'Data Science'];
@@ -102,22 +167,30 @@ export class StudentExploreComponent implements OnInit, OnDestroy {
   protected readonly selectedLevel = signal('All');
   protected readonly courses = signal<any[]>([]);
   protected readonly loading = signal(true);
+  protected readonly wishlist = signal<Set<number>>(new Set());
 
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
   protected readonly filteredCourses = computed(() => {
     const level = this.selectedLevel();
-    return this.courses().filter((course) => {
+    const wl = this.wishlist();
+    const filtered = this.courses().filter((course) => {
       const levelMatch = level === 'All' || course.level === level;
       return levelMatch;
     });
+    // Wishlisted courses always appear first
+    return [
+      ...filtered.filter(c => wl.has(c.courseId)),
+      ...filtered.filter(c => !wl.has(c.courseId)),
+    ];
   });
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit() {
     this.loadAllCourses();
+    this.loadWishlist();
 
     this.searchSub = this.searchSubject
       .pipe(debounceTime(400), distinctUntilChanged())
@@ -170,6 +243,40 @@ export class StudentExploreComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
       error: () => { this.loading.set(false); },
+    });
+  }
+
+  private loadWishlist() {
+    const uid = this.auth.userId();
+    if (!uid) return;
+    this.api.getWishlist(uid).subscribe({
+      next: (res: any) => {
+        if (res.success && res.courseIds) {
+          this.wishlist.set(new Set(res.courseIds));
+        }
+      }
+    });
+  }
+
+  toggleWishlist(event: Event, course: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const uid = this.auth.userId();
+    if (!uid) return;
+
+    this.api.toggleWishlist(uid, course.courseId).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          const newSet = new Set(this.wishlist());
+          if (res.isWishlisted) {
+            newSet.add(course.courseId);
+          } else {
+            newSet.delete(course.courseId);
+          }
+          this.wishlist.set(newSet);
+        }
+      }
     });
   }
 }

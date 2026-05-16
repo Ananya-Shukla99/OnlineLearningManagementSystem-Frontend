@@ -4,7 +4,7 @@ import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-student-profile',
+  selector: 'app-admin-profile',
   imports: [FormsModule],
   template: `
     <section>
@@ -15,13 +15,13 @@ import { AuthService } from '../services/auth.service';
         <aside class="glass-card profile-summary">
           <div class="profile-avatar">{{ initials() }}</div>
           <h2 class="profile-name">{{ fullName }}</h2>
-          <p class="page-copy" style="font-size: 0.82rem;">Student</p>
+          <p class="page-copy" style="font-size: 0.82rem;">Admin</p>
         </aside>
 
         <div class="profile-main">
           <article class="glass-card profile-card">
             <div class="section-header-row">
-              <h2 class="section-title">Student Details</h2>
+              <h2 class="section-title">Admin Details</h2>
               <span class="chip">Editable</span>
             </div>
 
@@ -179,7 +179,7 @@ import { AuthService } from '../services/auth.service';
     }
   `,
 })
-export class StudentProfileComponent implements OnInit {
+export class AdminProfileComponent implements OnInit {
   fullName = '';
   email = '';
   bio = '';

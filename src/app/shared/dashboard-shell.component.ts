@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, HostListener } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { instructorNavItems, studentNavItems, adminNavItems, NavItem } from './app-data';
@@ -11,8 +11,7 @@ import { CommonModule } from '@angular/common';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
     <div class="dashboard-shell" [class.dashboard-shell--instructor]="isInstructor" [class.dashboard-shell--student]="isStudent" [class.dashboard-shell--admin]="isAdmin">
-      <header class="topbar glass-card">
-        <button class="chip" type="button" (click)="sidebarCollapsed = !sidebarCollapsed">Menu</button>
+      <header class="topbar glass-card" style="justify-content: flex-end;">
         <div class="topbar-actions">
            <!-- Notification Bell -->
           <div class="notif-wrapper" style="position: relative; margin-right: 0.5rem;">
@@ -25,7 +24,7 @@ import { CommonModule } from '@angular/common';
 
             <!-- Notif Dropdown -->
             @if (showNotifs()) {
-              <div class="notif-dropdown glass-card animate-in">
+              <div class="notif-dropdown glass-card animate-in" (click)="$event.stopPropagation()">
                 <div class="notif-header">
                   <h4 style="margin:0; font-size: 1rem;">Notifications</h4>
                   <button (click)="markAllRead()" class="mark-all-btn">Mark all read</button>
@@ -56,8 +55,8 @@ import { CommonModule } from '@angular/common';
         </div>
       </header>
 
-      <div class="dashboard-body" [class.dashboard-body--sidebar-collapsed]="sidebarCollapsed">
-        <aside class="sidebar glass-card" [class.sidebar-collapsed]="sidebarCollapsed">
+      <div class="dashboard-body">
+        <aside class="sidebar glass-card">
           <div class="sidebar-top">
             <div>
               <div class="pill">EduLearn</div>
@@ -121,7 +120,7 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
   private navSub?: Subscription;
   private pollSub?: any;
 
-  protected sidebarCollapsed = true;
+
   protected showNotifs = signal(false);
   protected unreadCount = signal(0);
   protected notifications = signal<any[]>([]);
@@ -142,6 +141,13 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
     this.navSub = this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(updateShell);
+  }
+
+  @HostListener('document:click')
+  clickout() {
+    if (this.showNotifs()) {
+      this.showNotifs.set(false);
+    }
   }
 
   ngOnInit() {
@@ -183,13 +189,19 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
 
   protected markRead(n: any) {
     if (n.isRead) return;
-    this.api.markNotificationRead(n.notificationId).subscribe(() => this.refreshNotifs());
+    this.api.markNotificationRead(n.notificationId).subscribe(() => {
+      this.refreshNotifs();
+      this.showNotifs.set(false);
+    });
   }
 
   protected markAllRead() {
     const uid = this.auth.userId();
     if (!uid) return;
-    this.api.markAllNotificationsRead(uid).subscribe(() => this.refreshNotifs());
+    this.api.markAllNotificationsRead(uid).subscribe(() => {
+      this.refreshNotifs();
+      this.showNotifs.set(false);
+    });
   }
 
   private updateFromAuth() {
@@ -217,7 +229,7 @@ export class DashboardShellComponent implements OnInit, OnDestroy {
     } else if (this.isAdmin) {
       this.title = 'Admin';
       this.navItems = adminNavItems;
-      this.profilePath = '/admin';
+      this.profilePath = '/admin/profile';
     }
   }
 

@@ -43,10 +43,6 @@ import { AuthService } from '../services/auth.service';
         <div style="text-align: center; padding: 2rem 1rem; margin-top: 1.2rem;">
           <p class="page-copy">Loading students...</p>
         </div>
-      } @else if (selectedCourseId === 0) {
-        <div style="text-align: center; padding: 2rem 1rem; margin-top: 1.2rem;">
-          <p class="page-copy">Select a course above to view enrolled students.</p>
-        </div>
       } @else if (filteredStudents().length > 0) {
         <div class="student-list" style="margin-top: 1.2rem;">
           @for (student of filteredStudents(); track student.enrollmentId) {
@@ -234,49 +230,60 @@ export class InstructorStudentsComponent implements OnInit {
       next: (res: any) => {
         const courseList = res.data || [];
         this.courses.set(courseList);
-        
-        // Load all students for all courses by default
-        if (courseList.length > 0) {
-          const enrollRequests: any[] = courseList.map((c: any) => 
-            this.api.getEnrollmentsByCourse(c.courseId).pipe(
-              catchError(() => of({ success: true, data: [] }))
-            )
-          );
-          this.loading.set(true);
-          forkJoin(enrollRequests).subscribe({
-            next: (results: any) => {
-              let allEnrollments: any[] = [];
-              results.forEach((res: any) => {
-                const list = res.data || res || [];
-                allEnrollments = [...allEnrollments, ...list];
-              });
-              
-              // Remove duplicates (students enrolled in multiple courses of same instructor)
-              const uniqueEnrollments = Array.from(new Map(allEnrollments.map((e: any) => [e.studentId, e])).values());
-              this.enrollments.set(uniqueEnrollments);
-              this.loading.set(false);
-              
-              // Fetch student names
-              uniqueEnrollments.forEach((e: any) => {
-                this.api.getUserById(e.studentId).pipe(
-                  catchError(() => of({}))
-                ).subscribe({
-                  next: (userData: any) => {
-                    this.updateEnrollmentWithUserData(e.studentId, userData);
-                  }
-                });
-              });
-            },
-            error: () => this.loading.set(false)
-          });
-        }
+        this.loadAllStudents();
       },
+    });
+  }
+
+  loadAllStudents() {
+    const courseList = this.courses();
+    if (courseList.length === 0) {
+      this.enrollments.set([]);
+      return;
+    }
+    
+    const enrollRequests: any[] = courseList.map((c: any) => 
+      this.api.getEnrollmentsByCourse(c.courseId).pipe(
+        catchError(() => of({ success: true, data: [] }))
+      )
+    );
+    this.loading.set(true);
+    forkJoin(enrollRequests).subscribe({
+      next: (results: any) => {
+        let allEnrollments: any[] = [];
+        results.forEach((res: any) => {
+          const list = res.data || res || [];
+          allEnrollments = [...allEnrollments, ...list];
+        });
+        
+        // Remove duplicates (students enrolled in multiple courses of same instructor)
+        const uniqueEnrollments = Array.from(new Map(allEnrollments.map((e: any) => [e.studentId, e])).values());
+        this.enrollments.set(uniqueEnrollments);
+        this.loading.set(false);
+        
+        // Fetch student names
+        uniqueEnrollments.forEach((e: any) => {
+          if (!this.studentCache.has(e.studentId)) {
+            this.api.getUserById(e.studentId).pipe(
+              catchError(() => of({}))
+            ).subscribe({
+              next: (userData: any) => {
+                this.studentCache.set(e.studentId, userData);
+                this.updateEnrollmentWithUserData(e.studentId, userData);
+              }
+            });
+          } else {
+            this.updateEnrollmentWithUserData(e.studentId, this.studentCache.get(e.studentId));
+          }
+        });
+      },
+      error: () => this.loading.set(false)
     });
   }
 
   onCourseChange(courseId: number) {
     if (!courseId || courseId === 0) {
-      this.enrollments.set([]);
+      this.loadAllStudents();
       return;
     }
     this.loading.set(true);

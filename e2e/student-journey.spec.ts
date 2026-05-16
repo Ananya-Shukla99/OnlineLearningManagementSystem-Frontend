@@ -22,7 +22,14 @@ test.describe('Student Comprehensive Journey', () => {
     await page.selectOption('select[name="role"]', 'STUDENT');
     await page.waitForTimeout(500); 
 
-    await page.click('button:has-text("Create Account")');
+    // Send OTP
+    await page.click('button:has-text("Send OTP")');
+    await expect(page.getByText('OTP sent', { exact: false })).toBeVisible({ timeout: 10000 });
+    
+    // Fill test OTP
+    await page.fill('input[name="otp"]', '123456');
+    await page.click('button:has-text("Verify & Create Account")');
+    
     await expect(page.locator('.auth-success')).toBeVisible({ timeout: 15000 });
 
     // 2. LOGIN

@@ -20,7 +20,7 @@ export const API_BASE = {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private headers(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -33,8 +33,11 @@ export class ApiService {
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${API_BASE.AUTH}/auth/login`, { email, password });
   }
-  register(email: string, fullName: string, password: string, role: string): Observable<any> {
-    return this.http.post(`${API_BASE.AUTH}/auth/register`, { email, fullName, password, role });
+  sendOtp(email: string): Observable<any> {
+    return this.http.post(`${API_BASE.AUTH}/auth/send-otp?email=${email}`, {});
+  }
+  register(email: string, fullName: string, password: string, role: string, otp: string): Observable<any> {
+    return this.http.post(`${API_BASE.AUTH}/auth/register`, { email, fullName, password, role, otp });
   }
   validateToken(token: string): Observable<any> {
     return this.http.get(`${API_BASE.AUTH}/auth/validate?token=${token}`);
@@ -113,6 +116,16 @@ export class ApiService {
   markEnrollmentComplete(enrollmentId: number): Observable<any> {
     return this.http.put(`${API_BASE.ENROLLMENT}/api/v1/enrollments/complete/${enrollmentId}`, {}, { headers: this.headers() });
   }
+
+  // WISHLIST
+  toggleWishlist(studentId: number, courseId: number): Observable<any> {
+    return this.http.post(`${API_BASE.COURSE}/api/v1/courses/wishlist/toggle?studentId=${studentId}&courseId=${courseId}`, {}, { headers: this.headers() });
+  }
+  getWishlist(studentId: number): Observable<any> {
+    return this.http.get(`${API_BASE.COURSE}/api/v1/courses/wishlist/user/${studentId}`, { headers: this.headers() });
+  }
+
+
 
   // LESSONS
   getLessonsByCourse(courseId: number): Observable<any> {
@@ -341,7 +354,7 @@ export class ApiService {
   getUserById(userId: number): Observable<any> {
     return this.http.get(`${API_BASE.AUTH}/auth/user/${userId}`, { headers: this.headers() });
   }
-  updateProfile(data: { userId: number; fullName: string; bio: string; mobile: string }): Observable<any> {
+  updateProfile(data: { userId: number; fullName: string; bio: string; mobile: string; headline?: string; expertise?: string }): Observable<any> {
     return this.http.put(`${API_BASE.AUTH}/auth/profile`, data, { headers: this.headers() });
   }
   changePassword(data: { userId: number; oldPassword: string; newPassword: string }): Observable<any> {
@@ -361,7 +374,7 @@ export class ApiService {
   getCourseReviews(courseId: number): Observable<any> {
     return this.http.get(`${API_BASE.COURSE}/api/v1/courses/${courseId}/reviews`);
   }
-  submitCourseReview(courseId: number, data: { studentId: number; rating: number; comment: string }): Observable<any> {
+  submitReview(courseId: number, data: { studentId: number; rating: number; comment: string }): Observable<any> {
     return this.http.post(`${API_BASE.COURSE}/api/v1/courses/${courseId}/reviews`, data, { headers: this.headers() });
   }
   getCourseRating(courseId: number): Observable<any> {

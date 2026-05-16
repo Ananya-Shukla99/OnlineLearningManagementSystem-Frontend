@@ -223,10 +223,13 @@ export class InstructorProfileComponent implements OnInit {
     if (user) {
       this.fullName = user.fullName || '';
       this.email = user.email || '';
-      this.bio = user.fullName ? `${user.fullName}'s bio` : '';
-      this.mobile = '';
-      this.expertise.set([]);
-      this.expertiseText = '';
+      this.bio = user.bio || '';
+      this.mobile = user.mobile || '';
+      this.headline = user.headline || '';
+      this.expertiseText = user.expertise || '';
+      this.expertise.set(
+        this.expertiseText ? this.expertiseText.split(',').map(s => s.trim()).filter(s => s.length > 0) : []
+      );
       this.initials.set(
         this.fullName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
       );
@@ -246,19 +249,25 @@ export class InstructorProfileComponent implements OnInit {
       .filter(s => s.length > 0);
     this.expertise.set(expertiseAreas);
 
-    const combinedBio = this.headline ? `${this.headline}\n${this.bio}` : this.bio;
-
     this.api.updateProfile({
       userId: uid,
       fullName: this.fullName,
-      bio: combinedBio,
+      bio: this.bio,
       mobile: this.mobile,
+      headline: this.headline,
+      expertise: this.expertiseText
     }).subscribe({
       next: (res: any) => {
         this.saving.set(false);
         if (res.success) {
           this.saveMsg.set('Profile updated successfully!');
-          this.auth.updateUser({ fullName: this.fullName });
+          this.auth.updateUser({ 
+            fullName: this.fullName, 
+            bio: this.bio, 
+            mobile: this.mobile,
+            headline: this.headline,
+            expertise: this.expertiseText
+          });
           this.initials.set(
             this.fullName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
           );

@@ -32,4 +32,22 @@ test.describe('EduLearn Smoke Test', () => {
     await expect(page.locator('.intro-title')).toBeVisible();
     await expect(page.locator('.intro-title')).toContainText('Find your learning journey');
   });
+
+  test('should navigate to About section', async ({ page }) => {
+    await page.goto('/');
+    await page.click('text=About');
+    
+    // Verify query param and section content
+    await expect(page).toHaveURL(/section=1/);
+    await expect(page.locator('text=THE PLATFORM')).toBeVisible();
+  });
+
+  test('should navigate to Community section', async ({ page }) => {
+    await page.goto('/');
+    await page.click('text=Community');
+    
+    // Verify query param and section content
+    await expect(page).toHaveURL(/section=2/);
+    await expect(page.locator('text=global network of learners')).toBeVisible();
+  });
 });

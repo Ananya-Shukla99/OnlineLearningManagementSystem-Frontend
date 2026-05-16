@@ -31,7 +31,6 @@ import { AuthService } from '../services/auth.service';
           <div style="display:grid;gap:0.5rem;">
             <a routerLink="/admin/courses" class="btn-secondary" style="text-align:center;text-decoration:none;">Review All Courses</a>
             <a routerLink="/admin/users" class="btn-secondary" style="text-align:center;text-decoration:none;">Manage Users</a>
-            <a routerLink="/admin/payments" class="btn-secondary" style="text-align:center;text-decoration:none;">View Payments</a>
           </div>
         </article>
 
@@ -67,7 +66,7 @@ export class AdminDashboardComponent implements OnInit {
   protected recentCourses = signal<any[]>([]);
   protected loading = signal(true);
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService) { }
 
   ngOnInit() {
     forkJoin({
@@ -77,7 +76,7 @@ export class AdminDashboardComponent implements OnInit {
       next: (res: any) => {
         const courseList: any[] = Array.isArray(res.courses?.data) ? res.courses.data : (Array.isArray(res.courses) ? res.courses : []);
         const userList: any[] = Array.isArray(res.users?.data) ? res.users.data : (Array.isArray(res.users) ? res.users : []);
-        
+
         const publishedCount = courseList.filter((c: any) => c.isPublished === true || c.published === true || c.status === 'PUBLISHED').length;
 
         this.recentCourses.set(courseList.slice(0, 5));

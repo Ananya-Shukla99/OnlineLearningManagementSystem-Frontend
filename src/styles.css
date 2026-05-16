@@ -121,13 +121,12 @@ app-explore {
 	position: relative;
 }
 
-.dashboard-shell--instructor::before,
-.dashboard-shell--admin::before {
+.dashboard-shell--instructor::before {
 	content: '';
 	position: fixed;
 	inset: 0;
 	z-index: -2;
-	background-image: url('https://i.pinimg.com/1200x/39/21/26/39212658ac4a5a226ade6bc78a4f74b0.jpg');
+	background-image: url('https://i.pinimg.com/736x/26/64/21/266421fdb283bdcf3ef094ebd20585c5.jpg');
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
@@ -139,7 +138,7 @@ app-explore {
 	position: fixed;
 	inset: 0;
 	z-index: -2;
-	background-image: url('https://i.pinimg.com/1200x/39/21/26/39212658ac4a5a226ade6bc78a4f74b0.jpg');
+	background-image: url('https://i.pinimg.com/736x/97/49/8d/97498d882cbfe53e9d1209eaeaab3f66.jpg');
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
@@ -160,7 +159,7 @@ app-explore {
 	position: fixed;
 	inset: 0;
 	z-index: -2;
-	background-image: url('https://i.pinimg.com/1200x/59/68/ed/5968ed0f4fa8093edae984df663954d0.jpg');
+	background-image: url('https://i.pinimg.com/736x/db/52/9e/db529e162f5683182638703adb6b33c8.jpg');
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
@@ -283,7 +282,11 @@ app-explore::-webkit-scrollbar-thumb:hover {
 }
 
 .el-fade-4 {
-	animation: el-fadeIn 1.2s ease-out 1.2s both;
+	animation: el-fadeUp 1.2s ease-out 1.2s both;
+}
+
+.el-fade-5 {
+	animation: el-fadeIn 1.5s ease-out 1.5s both;
 }
 
 .arrow-move {
@@ -1553,10 +1556,10 @@ button:hover .arrow-move {
 
 .dashboard-shell {
 	display: grid;
-	grid-template-rows: auto 1fr;
+	grid-template-rows: auto minmax(0, 1fr);
 	width: 100%;
 	min-width: 0;
-	min-height: 100vh;
+	height: 100vh;
 	padding: 1rem;
 	gap: 1rem;
 	align-items: stretch;
@@ -1566,12 +1569,12 @@ button:hover .arrow-move {
 .dashboard-body {
 	display: grid;
 	grid-template-columns: 240px minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
 	width: 100%;
 	min-width: 0;
 	gap: 1rem;
-	min-height: auto;
-	overflow-y: auto;
-	overflow-x: hidden;
+	min-height: 0;
+	overflow: hidden;
 	align-items: stretch;
 	transition: grid-template-columns 220ms ease, gap 220ms ease;
 }

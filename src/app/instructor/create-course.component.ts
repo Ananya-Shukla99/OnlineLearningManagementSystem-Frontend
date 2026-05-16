@@ -48,7 +48,11 @@ interface LessonDraft {
             <div style="display: grid; gap: 1.5rem;">
               <div>
                 <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Course Title *</label>
-                <input type="text" class="el-input" [ngModel]="courseForm.title()" (ngModelChange)="courseForm.title.set($event)" placeholder="e.g. Modern Web Development" />
+                <input type="text" class="el-input" [ngModel]="courseForm.title()" (ngModelChange)="courseForm.title.set($event)" placeholder="e.g. Modern Web Development" 
+                       [style.border-color]="showTitleError() ? '#e05c5c' : null" />
+                @if (showTitleError()) {
+                  <span style="color: #e05c5c; font-size: 0.8rem; margin-top: 0.3rem; display: block;">Course title is required.</span>
+                }
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -73,12 +77,20 @@ interface LessonDraft {
 
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                 <div>
-                  <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Price (₹)</label>
-                  <input type="number" class="el-input" [ngModel]="courseForm.price()" (ngModelChange)="courseForm.price.set($event)" placeholder="0 = Free" />
+                  <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Price (₹) *</label>
+                  <input type="number" class="el-input" [ngModel]="courseForm.price()" (ngModelChange)="courseForm.price.set($event)" placeholder="0 = Free" 
+                         [style.border-color]="showPriceError() ? '#e05c5c' : null" />
+                  @if (showPriceError()) {
+                    <span style="color: #e05c5c; font-size: 0.8rem; margin-top: 0.3rem; display: block;">Price is required.</span>
+                  }
                 </div>
                 <div>
-                  <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Duration (mins)</label>
-                  <input type="number" class="el-input" [ngModel]="courseForm.totalDuration()" (ngModelChange)="courseForm.totalDuration.set($event)" placeholder="e.g. 120" />
+                  <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Duration (mins) *</label>
+                  <input type="number" class="el-input" [ngModel]="courseForm.totalDuration()" (ngModelChange)="courseForm.totalDuration.set($event)" placeholder="e.g. 120" 
+                         [style.border-color]="showDurationError() ? '#e05c5c' : null" />
+                  @if (showDurationError()) {
+                    <span style="color: #e05c5c; font-size: 0.8rem; margin-top: 0.3rem; display: block;">Duration is required.</span>
+                  }
                 </div>
                 <div>
                   <label class="page-copy" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Language</label>
@@ -135,16 +147,30 @@ interface LessonDraft {
                     <span class="pill" *ngIf="lesson.id" style="background: #2e3e30; color: #a5d6a7;">Saved</span>
                   </div>
 
-                  <input type="text" class="el-input" [(ngModel)]="lesson.title" placeholder="Lesson Title" />
+                  <div>
+                    <input type="text" class="el-input" [(ngModel)]="lesson.title" placeholder="Lesson Title" 
+                           [style.border-color]="lesson.errorMsg === 'Title is required' || lesson.errorMsg === 'Lesson title is required.' ? '#e05c5c' : null" />
+                    @if (lesson.errorMsg === 'Title is required' || lesson.errorMsg === 'Lesson title is required.') {
+                      <span style="color: #e05c5c; font-size: 0.8rem; margin-top: 0.3rem; display: block;">Lesson title is required.</span>
+                    }
+                  </div>
                   
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <select class="el-input" [(ngModel)]="lesson.contentType">
-                      <option value="VIDEO">Video Upload</option>
-                      <option value="VIDEO_URL">Video URL (YouTube/Vimeo)</option>
-                      <option value="ARTICLE">Article (URL)</option>
-                      <option value="PDF">PDF Upload / URL</option>
-                    </select>
-                    <input type="number" class="el-input" [(ngModel)]="lesson.durationMinutes" placeholder="Duration (mins)" />
+                    <div>
+                      <select class="el-input" [(ngModel)]="lesson.contentType">
+                        <option value="VIDEO">Video Upload</option>
+                        <option value="VIDEO_URL">Video URL (YouTube/Vimeo)</option>
+                        <option value="ARTICLE">Article (URL)</option>
+                        <option value="PDF">PDF Upload / URL</option>
+                      </select>
+                    </div>
+                    <div>
+                      <input type="number" class="el-input" [(ngModel)]="lesson.durationMinutes" placeholder="Duration (mins)" 
+                             [style.border-color]="lesson.errorMsg === 'Duration is required' ? '#e05c5c' : null" />
+                      @if (lesson.errorMsg === 'Duration is required') {
+                        <span style="color: #e05c5c; font-size: 0.8rem; margin-top: 0.3rem; display: block;">Lesson duration is required.</span>
+                      }
+                    </div>
                   </div>
 
                   <textarea class="el-input" rows="2" [(ngModel)]="lesson.description" placeholder="Lesson Description"></textarea>
@@ -209,7 +235,7 @@ interface LessonDraft {
                     }
                   </div>
 
-                  @if (lesson.errorMsg) {
+                  @if (lesson.errorMsg && lesson.errorMsg !== 'Title is required' && lesson.errorMsg !== 'Lesson title is required.' && lesson.errorMsg !== 'Duration is required') {
                     <p class="page-copy" style="color: #e05c5c; font-size: 0.8rem;">{{ lesson.errorMsg }}</p>
                   }
 
@@ -275,6 +301,10 @@ export class InstructorCreateCourseComponent implements OnInit {
   protected saving = signal(false);
   protected successMsg = signal('');
   protected errorMsg = signal('');
+  protected attemptedSave = signal(false);
+  protected showTitleError = computed(() => this.attemptedSave() && !this.checklistTitle());
+  protected showPriceError = computed(() => this.attemptedSave() && !this.checklistPrice());
+  protected showDurationError = computed(() => this.attemptedSave() && !this.checklistDuration());
 
   protected courseForm = {
     title: signal(''),
@@ -291,6 +321,8 @@ export class InstructorCreateCourseComponent implements OnInit {
 
   // Checklist computed properties
   protected checklistTitle = computed(() => this.courseForm.title().trim().length > 0);
+  protected checklistPrice = computed(() => { const p = this.courseForm.price(); return p !== null && p !== undefined && p >= 0 && p.toString().trim() !== ''; });
+  protected checklistDuration = computed(() => { const d = this.courseForm.totalDuration(); return d !== null && d !== undefined && d > 0 && d.toString().trim() !== ''; });
   protected checklistDesc = computed(() => this.courseForm.description().trim().length > 0);
   protected checklistLessons = computed(() => this.lessons().some(l => l.id != null));
   protected checklistPublished = computed(() => this.isPublished());
@@ -354,8 +386,8 @@ export class InstructorCreateCourseComponent implements OnInit {
   }
 
   protected saveDraft() {
-    if (!this.checklistTitle()) {
-      this.errorMsg.set('Course title is required.');
+    this.attemptedSave.set(true);
+    if (!this.checklistTitle() || !this.checklistPrice() || !this.checklistDuration()) {
       return;
     }
 
@@ -416,6 +448,11 @@ export class InstructorCreateCourseComponent implements OnInit {
   }
 
   protected publishCourse() {
+    this.attemptedSave.set(true);
+    if (!this.checklistTitle() || !this.checklistPrice() || !this.checklistDuration()) {
+      return;
+    }
+
     const id = this.savedCourseId();
     if (!id) return;
 
@@ -519,6 +556,11 @@ export class InstructorCreateCourseComponent implements OnInit {
 
     if (!lesson.title) {
       lesson.errorMsg = 'Title is required';
+      return;
+    }
+
+    if (lesson.durationMinutes === null || lesson.durationMinutes === undefined || lesson.durationMinutes <= 0 || lesson.durationMinutes.toString().trim() === '') {
+      lesson.errorMsg = 'Duration is required';
       return;
     }
 

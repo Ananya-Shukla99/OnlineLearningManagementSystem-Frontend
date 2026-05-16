@@ -25,7 +25,14 @@ test.describe('Instructor Journey', () => {
     await page.selectOption('select[name="role"]', 'INSTRUCTOR');
     await page.waitForTimeout(500); 
 
-    await page.click('button:has-text("Create Account")');
+    // Send OTP
+    await page.click('button:has-text("Send OTP")');
+    await expect(page.locator('text=OTP sent')).toBeVisible({ timeout: 10000 });
+    
+    // Fill test OTP
+    await page.fill('input[name="otp"]', '123456');
+    await page.click('button:has-text("Verify & Create Account")');
+    
     await expect(page.locator('.auth-success')).toBeVisible({ timeout: 10000 });
 
     // 2. LOGIN
@@ -53,17 +60,19 @@ test.describe('Instructor Journey', () => {
 
     await page.fill('textarea[placeholder="What will students learn?"]', 'Learning automated testing with Playwright.');
     await page.fill('input[placeholder="0 = Free"]', '49');
+    await page.fill('input[placeholder="e.g. 120"]', '120');
 
     // Save Draft
     await page.click('button:has-text("Save Draft")');
 
     // Verify Success
-    await expect(page.locator('text=Course draft created successfully')).toBeVisible();
+    await expect(page.getByText('Course draft created successfully', { exact: false })).toBeVisible();
     await expect(page.locator('button:has-text("Submit for Review")')).toBeVisible();
     
     // 4. LESSON MANAGEMENT
     await page.click('button:has-text("+ Add Lesson")');
     await page.fill('input[placeholder="Lesson Title"]', 'Introduction to E2E Testing');
+    await page.fill('input[placeholder="Duration (mins)"]', '10');
     await page.fill('textarea[placeholder="Lesson Description"]', 'An automated walk-through.');
     
     await page.click('button:has-text("Save Lesson")');

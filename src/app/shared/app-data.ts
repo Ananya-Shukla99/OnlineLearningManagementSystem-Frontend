@@ -132,6 +132,7 @@ export const instructorNavItems: NavItem[] = [
 export const studentNavItems: NavItem[] = [
   { label: 'Dashboard', path: '/student' },
   { label: 'My Courses', path: '/student/my-courses' },
+  { label: 'Wishlist', path: '/student/wishlist' },
   { label: 'Explore', path: '/student/explore' },
   { label: 'Certificates', path: '/student/certificates' },
   { label: 'Progress', path: '/student/progress' },
