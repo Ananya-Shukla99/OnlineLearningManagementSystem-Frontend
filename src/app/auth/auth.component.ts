@@ -88,6 +88,7 @@ import { AuthService } from '../services/auth.service';
                   </svg>
                   Sign in with Google
                 </button>
+
               </form>
             }
             
@@ -171,6 +172,7 @@ import { AuthService } from '../services/auth.service';
                   </svg>
                   Sign up with Google
                 </button>
+
               </form>
             }
           </article>
@@ -393,6 +395,7 @@ import { AuthService } from '../services/auth.service';
       box-shadow: 0 1px 3px rgba(60,64,67,0.3);
     }
 
+
     @media (max-width: 768px) {
       .auth-wrapper.auth-wrapper--register {
         grid-template-columns: 1fr;
@@ -442,8 +445,10 @@ export class AuthComponent {
 
   protected doGoogleAuth() {
     // Redirect through the gateway (8080) using a custom trigger path to avoid path-based interception.
-    window.location.href = 'http://localhost:8080/api/v1/auth/google-login';
+    window.location.href = 'http://localhost:8080/auth/login/google';
   }
+
+
 
   protected otpSent = signal(false);
   protected regOtp = '';
@@ -453,7 +458,7 @@ export class AuthComponent {
       this.error.set('Please enter your email first.');
       return;
     }
-    
+
     // Pattern check manually for OTP send
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(this.regEmail)) {
@@ -491,7 +496,7 @@ export class AuthComponent {
       this.loading.set(false);
       return;
     }
-    
+
     const regFullName = this.regFirstName.trim() + ' ' + this.regLastName.trim();
 
     // Include OTP in the registration request

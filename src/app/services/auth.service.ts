@@ -26,7 +26,7 @@ export class AuthService {
   readonly isAdmin = computed(() => this._user()?.role === 'ADMIN');
   readonly userId = computed(() => this._user()?.userId ?? null);
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) { }
 
   private loadFromStorage(): AuthUser | null {
     try {
@@ -88,6 +88,8 @@ export class AuthService {
     this.refreshCurrentUser();
     this.redirectAfterLogin(role);
   }
+
+
 
 
   /** Update the user signal & localStorage with partial user data */

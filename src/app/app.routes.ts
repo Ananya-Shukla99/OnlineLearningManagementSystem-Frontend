@@ -3,6 +3,7 @@ import { authGuard } from './guards/auth.guard';
 
 import { AuthComponent } from './auth/auth.component';
 import { OAuth2CallbackComponent } from './auth/oauth2-callback.component';
+
 import { CourseDetailComponent } from './course-detail/course-detail.component';
 import { LessonPlayerComponent } from './course/lesson-player.component';
 import { DashboardShellComponent } from './shared/dashboard-shell.component';
@@ -41,6 +42,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'auth', component: AuthComponent },
   { path: 'oauth2/callback', component: OAuth2CallbackComponent },
+
   { path: 'explore', component: ExploreComponent },
   { path: 'course/:courseId', component: CourseDetailComponent },
   {
