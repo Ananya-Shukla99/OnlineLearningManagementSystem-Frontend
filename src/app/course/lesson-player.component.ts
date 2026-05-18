@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-lesson-player',
@@ -891,8 +892,8 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
 
   protected resolveMediaUrl(url: string): string {
     if (!url) return '';
-    if (url.startsWith('/')) return `http://localhost:8080${url}`;
-    return url.replace('http://localhost:8083', 'http://localhost:8080');
+    if (url.startsWith('/')) return `${environment.apiGateway}${url}`;
+    return url.replace('http://localhost:8083', environment.apiGateway).replace('http://localhost:8080', environment.apiGateway);
   }
 
   protected normalizeType(contentType: string | null | undefined, contentUrl?: string): string {

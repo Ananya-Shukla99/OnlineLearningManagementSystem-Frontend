@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-student-certificates',
@@ -144,7 +145,7 @@ export class StudentCertificatesComponent implements OnInit {
     // Construction of the download URL using the gateway
 
     // Or more simply, since we know certificateUrl starts with /api/v1/
-    const gatewayUrl = window.location.origin.includes('localhost') ? 'http://localhost:8080' : window.location.origin;
+    const gatewayUrl = environment.apiGateway;
     const downloadUrl = `${gatewayUrl}${cert.certificateUrl}`;
     window.open(downloadUrl, '_blank');
 

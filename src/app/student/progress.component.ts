@@ -6,6 +6,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 interface CourseProgress {
   courseId: number;
@@ -212,7 +213,7 @@ export class StudentProgressComponent implements OnInit {
 
   protected downloadCert(cert: any) {
     if (!cert.certificateUrl) return;
-    const url = cert.certificateUrl.startsWith('http') ? cert.certificateUrl : `http://localhost:8080${cert.certificateUrl}`;
+    const url = cert.certificateUrl.startsWith('http') ? cert.certificateUrl : `${environment.apiGateway}${cert.certificateUrl}`;
     window.open(url, '_blank');
   }
 }

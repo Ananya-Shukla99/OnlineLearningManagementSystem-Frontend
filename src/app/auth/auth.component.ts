@@ -2,6 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-auth',
@@ -445,7 +446,7 @@ export class AuthComponent {
 
   protected doGoogleAuth() {
     // Redirect through the gateway (8080) using a custom trigger path to avoid path-based interception.
-    window.location.href = 'http://localhost:8080/auth/login/google';
+    window.location.href = `${environment.apiGateway}/auth/login/google`;
   }
 
 
